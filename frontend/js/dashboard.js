@@ -1,37 +1,32 @@
 (function ($) {
     "use strict";
 
-    // Check if user is logged in
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-        window.location.href = 'views/login.html';
-        return;
-    }
-
-    // Display user name and role
-    const userData = JSON.parse(currentUser);
-    $('#userNameDisplay').text(userData.firstName || 'User');
-    $('#welcomeUserName').text(userData.firstName || 'User');
-    
-    // Display role badge
-    const userRole = userData.role || 'user';
-    const roleBadgeClass = userRole === 'admin' ? 'bg-danger' : 'bg-primary';
-    const roleBadgeText = userRole === 'admin' ? 'ADMIN' : 'USER';
-    $('#userRoleBadge').html(`<span class="badge ${roleBadgeClass} ms-2">${roleBadgeText}</span>`);
-
-    // Logout functionality
-    $('#logoutBtn').on('click', function(e) {
-        e.preventDefault();
-        if (confirm('Are you sure you want to logout?')) {
-            localStorage.removeItem('currentUser');
-            window.location.href = '../index.html';
+    window.initDashboard = function() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.hash = '#login';
+            return;
         }
-    });
 
-    // Initialize inventory from localStorage or create empty array
+        const userData = JSON.parse(currentUser);
+        $('#userNameDisplay').text(userData.firstName || 'User');
+        $('#welcomeUserName').text(userData.firstName || 'User');
+        
+        const userRole = userData.role || 'user';
+        const roleBadgeClass = userRole === 'admin' ? 'bg-danger' : 'bg-primary';
+        const roleBadgeText = userRole === 'admin' ? 'ADMIN' : 'USER';
+        $('#userRoleBadge').html(`<span class="badge ${roleBadgeClass} ms-2">${roleBadgeText}</span>`);
+
+        $('#logoutBtn').on('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.hash = '#home';
+            }
+        });
+
     let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
 
-    // Sample data if inventory is empty
     if (inventory.length === 0) {
         inventory = [
             { id: 1, name: 'Dell XPS 15 Laptop', category: 'Electronics', quantity: 15, price: 1299.99 },
@@ -43,18 +38,15 @@
         saveInventory();
     }
 
-    // Save inventory to localStorage
     function saveInventory() {
         localStorage.setItem('inventory', JSON.stringify(inventory));
     }
 
-    // Get next ID
     function getNextId() {
         if (inventory.length === 0) return 1;
         return Math.max(...inventory.map(item => item.id)) + 1;
     }
 
-    // Update statistics
     function updateStats() {
         const totalItems = inventory.length;
         const inStockItems = inventory.filter(item => item.quantity > 10).length;
@@ -67,7 +59,6 @@
         $('#totalValue').text('$' + totalValue.toFixed(2));
     }
 
-    // Render inventory table
     function renderInventory() {
         const tbody = $('#inventoryTableBody');
         tbody.empty();
@@ -119,7 +110,6 @@
         updateStats();
     }
 
-    // Add new item (Admin only)
     $('#saveItemBtn').on('click', function() {
         // Check if user is admin
         if (userRole !== 'admin') {
@@ -156,7 +146,6 @@
         alert('Item added successfully!');
     });
     
-    // Hide Add Item button for non-admin users
     if (userRole !== 'admin') {
         const addBtn = $('#addItemBtn');
         if (addBtn.length) {
@@ -165,7 +154,6 @@
         }
     }
 
-    // Edit item - populate modal
     $(document).on('click', '.edit-btn', function() {
         const id = parseInt($(this).data('id'));
         const item = inventory.find(i => i.id === id);
@@ -181,7 +169,6 @@
         }
     });
 
-    // Update item
     $('#updateItemBtn').on('click', function() {
         const id = parseInt($('#editItemId').val());
         const name = $('#editItemName').val().trim();
@@ -212,7 +199,6 @@
         }
     });
 
-    // Delete item
     $(document).on('click', '.delete-btn', function() {
         const id = parseInt($(this).data('id'));
         const item = inventory.find(i => i.id === id);
@@ -225,7 +211,19 @@
         }
     });
 
-    // Initial render
-    renderInventory();
+            renderInventory();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('inventoryTableBody')) {
+                window.initDashboard();
+            }
+        });
+    } else {
+        if (document.getElementById('inventoryTableBody')) {
+            window.initDashboard();
+        }
+    }
 
 })(jQuery);

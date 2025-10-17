@@ -51,12 +51,12 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto py-0 py-lg-3 px-4 px-lg-0">
-                <a href="index.html" class="nav-item nav-link active fw-semibold fs-5 px-3">Home</a>
-                <a href="views/about.html" class="nav-item nav-link fw-semibold fs-5 px-3">About</a>
-                <a href="views/service.html" class="nav-item nav-link fw-semibold fs-5 px-3">Services</a>
-                <a href="views/feature.html" class="nav-item nav-link fw-semibold fs-5 px-3">Features</a>
-                <a href="views/dashboard.html" class="nav-item nav-link fw-semibold fs-5 px-3" id="dashboardLink" style="display: none;">Dashboard</a>
-                <a href="views/login.html" class="nav-item nav-link fw-semibold fs-5 px-3" id="loginBtn">
+                <a href="#home" class="nav-item nav-link active fw-semibold fs-5 px-3">Home</a>
+                <a href="#about" class="nav-item nav-link fw-semibold fs-5 px-3">About</a>
+                <a href="#services" class="nav-item nav-link fw-semibold fs-5 px-3">Services</a>
+                <a href="#features" class="nav-item nav-link fw-semibold fs-5 px-3">Features</a>
+                <a href="#dashboard" class="nav-item nav-link fw-semibold fs-5 px-3" id="dashboardLink" style="display: none;">Dashboard</a>
+                <a href="#login" class="nav-item nav-link fw-semibold fs-5 px-3" id="loginBtn">
                     <i class="fas fa-sign-in-alt me-2"></i>Login
                 </a>
                 <a href="#" class="nav-item nav-link fw-semibold fs-5 px-3" id="logoutBtn" style="display: none;">
@@ -75,15 +75,15 @@
     <!-- Main Content Start -->
     <div id="main-content">
     <!-- Hero Start -->
-    <div class="container-fluid bg-light py-5" style="min-height: 70vh;">
+    <div id="home" class="container-fluid bg-light py-5" style="min-height: 70vh;">
         <div class="container py-5">
             <div class="row align-items-center py-5">
                 <div class="col-lg-7">
                     <h1 class="display-4 fw-bold mb-4 animated fadeInUp">Modern Inventory Management <span class="text-primary">Made Simple</span></h1>
                     <p class="fs-5 text-muted mb-4 animated fadeInUp">Streamline your warehouse operations with our powerful, easy-to-use inventory management system.</p>
                     <div class="d-flex gap-3 animated fadeInUp">
-                        <a href="views/login.html" class="btn btn-primary btn-lg rounded-pill px-4">Get Started</a>
-                        <a href="views/about.html" class="btn btn-outline-primary btn-lg rounded-pill px-4">Learn More</a>
+                        <a href="#login" class="btn btn-primary btn-lg rounded-pill px-4">Get Started</a>
+                        <a href="#about" class="btn btn-outline-primary btn-lg rounded-pill px-4">Learn More</a>
                     </div>
                 </div>
                 <div class="col-lg-5 text-center animated fadeInRight">
@@ -96,7 +96,7 @@
 
 
     <!-- About Start -->
-    <div class="container-fluid overflow-hidden py-5 px-lg-0">
+    <div id="about" class="container-fluid overflow-hidden py-5 px-lg-0">
         <div class="container about py-5 px-lg-0">
             <div class="row g-5 mx-lg-0">
                 <div class="col-lg-6 ps-lg-0 wow fadeInLeft" data-wow-delay="0.1s" style="min-height: 400px;">
@@ -174,7 +174,7 @@
 
 
     <!-- Service Start -->
-    <div class="container-xxl py-5">
+    <div id="services" class="container-xxl py-5">
         <div class="container py-5">
             <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
                 <h6 class="text-secondary text-uppercase">Our Services</h6>
@@ -248,7 +248,7 @@
 
 
     <!-- Feature Start -->
-    <div class="container-fluid overflow-hidden py-5 px-lg-0">
+    <div id="features" class="container-fluid overflow-hidden py-5 px-lg-0">
         <div class="container feature py-5 px-lg-0">
             <div class="row g-5 mx-lg-0">
                 <div class="col-lg-6 feature-text wow fadeInUp" data-wow-delay="0.1s">
@@ -312,7 +312,7 @@
 
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="js/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
@@ -323,11 +323,20 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
     
-    <!-- SPA Router -->
-    <script src="js/spa-router.js"></script>
+    <!-- Login Script -->
+    <script src="js/login.js"></script>
     
-    <!-- Auth Check Script -->
-    <script src="js/auth-check.js"></script>
+    <!-- Register Script -->
+    <script src="js/register.js"></script>
+    
+    <!-- Dashboard Script -->
+    <script src="js/dashboard.js"></script>
+    
+    <!-- SPA Library -->
+    <script src="js/spapp.js"></script>
+    
+    <!-- SPA Routes -->
+    <script src="js/script.js"></script>
 </body>
 
 </html>

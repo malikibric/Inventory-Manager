@@ -1,8 +1,5 @@
-// Login functionality
 (function() {
     'use strict';
-
-    // Sample users database (stored in localStorage)
     const initUsers = () => {
         if (!localStorage.getItem('users')) {
             const defaultUsers = [
@@ -29,51 +26,55 @@
         }
     };
 
-    // Initialize users
     initUsers();
+    window.initLoginPage = function() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.hash = '#dashboard';
+            return;
+        }
 
-    // Check if already logged in
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        window.location.href = 'dashboard.html';
-        return;
-    }
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
 
-    // Handle login form submission
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
 
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
 
-            // Get users from localStorage
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const user = users.find(u => u.email === email && u.password === password);
 
-            // Find user by email and password
-            const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    const userSession = {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        role: user.role
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(userSession));
 
-            if (user) {
-                // Store current user (without password)
-                const userSession = {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    role: user.role
-                };
-                localStorage.setItem('currentUser', JSON.stringify(userSession));
+                    alert('Login successful! Welcome ' + user.firstName + '!');
+                    window.location.hash = '#dashboard';
+                } else {
+                    alert('Invalid email or password. Please try again.\n\nDemo accounts:\n- admin@inventory.com / admin123\n- user@inventory.com / user123');
+                }
+            });
+        }
+    };
 
-                // Show success message
-                alert('Login successful! Welcome ' + user.firstName + '!');
-
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('Invalid email or password. Please try again.\n\nDemo accounts:\n- admin@inventory.com / admin123\n- user@inventory.com / user123');
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('loginForm')) {
+                window.initLoginPage();
             }
         });
+    } else {
+        if (document.getElementById('loginForm')) {
+            window.initLoginPage();
+        }
     }
 })();
