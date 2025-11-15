@@ -3,7 +3,7 @@ require_once 'BaseDao.php';
 
 class OrderDao extends BaseDao {
     public function __construct() {
-        parent::__construct("orders");
+        parent::__construct("orders", "order_id");
     }
 
     public function getByUser($user_id) {
