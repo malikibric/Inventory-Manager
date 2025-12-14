@@ -1,80 +1,34 @@
-(function() {
-    'use strict';
-    const initUsers = () => {
-        if (!localStorage.getItem('users')) {
-            const defaultUsers = [
-                {
-                    id: 1,
-                    username: 'admin',
-                    email: 'admin@inventory.com',
-                    password: 'admin123',
-                    firstName: 'Admin',
-                    lastName: 'User',
-                    role: 'admin'
-                },
-                {
-                    id: 2,
-                    username: 'user',
-                    email: 'user@inventory.com',
-                    password: 'user123',
-                    firstName: 'Regular',
-                    lastName: 'User',
-                    role: 'user'
-                }
-            ];
-            localStorage.setItem('users', JSON.stringify(defaultUsers));
-        }
-    };
+window.initLoginPage = function () {
+    $('#loginForm').off('submit').on('submit', function (e) {
+        e.preventDefault();
 
-    initUsers();
-    window.initLoginPage = function() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            window.location.hash = '#dashboard';
-            return;
-        }
+        const email = $('#email').val();
+        const password = $('#password').val();
+        const btn = $(this).find('button[type="submit"]');
+        const originalText = btn.html();
 
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...');
 
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
-
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-                const user = users.find(u => u.email === email && u.password === password);
-
-                if (user) {
-                    const userSession = {
-                        id: user.id,
-                        username: user.username,
-                        email: user.email,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        role: user.role
-                    };
-                    localStorage.setItem('currentUser', JSON.stringify(userSession));
-
-                    alert('Login successful! Welcome ' + user.firstName + '!');
+        $.ajax({
+            url: '../backend/login',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ email: email, password: password }),
+            success: function (response) {
+                if (response.success) {
+                    Auth.setToken(response.token);
+                    Auth.setUser(response.user);
+                    Auth.updateUI();
                     window.location.hash = '#dashboard';
-                } else {
-                    alert('Invalid email or password. Please try again.\n\nDemo accounts:\n- admin@inventory.com / admin123\n- user@inventory.com / user123');
                 }
-            });
-        }
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('loginForm')) {
-                window.initLoginPage();
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                alert('Login failed: ' + (response ? response.error : 'Unknown error'));
+            },
+            complete: function () {
+                btn.prop('disabled', false).html(originalText);
             }
         });
-    } else {
-        if (document.getElementById('loginForm')) {
-            window.initLoginPage();
-        }
-    }
-})();
+    });
+};

@@ -1,229 +1,260 @@
-(function ($) {
-    "use strict";
+window.initDashboard = function () {
+    // Check authentication first
+    if (!Auth.isLoggedIn()) {
+        window.location.hash = '#login';
+        return;
+    }
 
-    window.initDashboard = function() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (!currentUser) {
-            window.location.hash = '#login';
-            return;
-        }
+    const user = Auth.getUser();
+    
+    // Safely update UI elements
+    const welcomeUserName = $('#welcomeUserName');
+    const userRoleBadge = $('#userRoleBadge');
+    const addNewItemBtn = $('#addNewItemBtn');
+    
+    if (welcomeUserName.length) {
+        welcomeUserName.text(user.username || 'User');
+    }
+    
+    if (userRoleBadge.length) {
+        userRoleBadge.text(user.role === 'admin' ? ' (Admin)' : ' (User)');
+    }
 
-        const userData = JSON.parse(currentUser);
-        $('#userNameDisplay').text(userData.firstName || 'User');
-        $('#welcomeUserName').text(userData.firstName || 'User');
+    // Show/hide Add New Item button based on role
+    if (Auth.isAdmin() && addNewItemBtn.length) {
+        addNewItemBtn.show();
+    } else if (addNewItemBtn.length) {
+        addNewItemBtn.hide();
+    }
+
+    loadInventory();
+    loadCategories();
+
+    // Add Item
+    $('#saveItemBtn').off('click').on('click', function () {
+        const itemName = $('#itemName');
+        const itemCategory = $('#itemCategory');
+        const itemQuantity = $('#itemQuantity');
+        const itemPrice = $('#itemPrice');
         
-        const userRole = userData.role || 'user';
-        const roleBadgeClass = userRole === 'admin' ? 'bg-danger' : 'bg-primary';
-        const roleBadgeText = userRole === 'admin' ? 'ADMIN' : 'USER';
-        $('#userRoleBadge').html(`<span class="badge ${roleBadgeClass} ms-2">${roleBadgeText}</span>`);
-
-        $('#logoutBtn').on('click', function(e) {
-            e.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('currentUser');
-                window.location.hash = '#home';
-            }
-        });
-
-    let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-
-    if (inventory.length === 0) {
-        inventory = [
-            { id: 1, name: 'Dell XPS 15 Laptop', category: 'Electronics', quantity: 15, price: 1299.99 },
-            { id: 2, name: 'Office Chair', category: 'Furniture', quantity: 8, price: 249.99 },
-            { id: 3, name: 'Wireless Mouse', category: 'Electronics', quantity: 45, price: 29.99 },
-            { id: 4, name: 'Work Jacket', category: 'Clothing', quantity: 3, price: 89.99 },
-            { id: 5, name: 'Tool Set', category: 'Tools', quantity: 12, price: 159.99 }
-        ];
-        saveInventory();
-    }
-
-    function saveInventory() {
-        localStorage.setItem('inventory', JSON.stringify(inventory));
-    }
-
-    function getNextId() {
-        if (inventory.length === 0) return 1;
-        return Math.max(...inventory.map(item => item.id)) + 1;
-    }
-
-    function updateStats() {
-        const totalItems = inventory.length;
-        const inStockItems = inventory.filter(item => item.quantity > 10).length;
-        const lowStockItems = inventory.filter(item => item.quantity <= 10 && item.quantity > 0).length;
-        const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-
-        $('#totalItems').text(totalItems);
-        $('#inStockItems').text(inStockItems);
-        $('#lowStockItems').text(lowStockItems);
-        $('#totalValue').text('$' + totalValue.toFixed(2));
-    }
-
-    function renderInventory() {
-        const tbody = $('#inventoryTableBody');
-        tbody.empty();
-
-        if (inventory.length === 0) {
-            tbody.append(`
-                <tr>
-                    <td colspan="8" class="text-center py-5">
-                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No items in inventory. Add your first item!</p>
-                    </td>
-                </tr>
-            `);
+        // Validate fields exist and have values
+        if (!itemName.length || !itemName.val()) {
+            alert('⚠️ Please enter item name');
             return;
         }
-
-        inventory.forEach(item => {
-            const total = (item.quantity * item.price).toFixed(2);
-            const statusClass = item.quantity > 10 ? 'in-stock' : item.quantity > 0 ? 'low-stock' : 'text-danger';
-            const statusText = item.quantity > 10 ? 'In Stock' : item.quantity > 0 ? 'Low Stock' : 'Out of Stock';
-
-            // Admin can see price and delete, User can only view and edit quantity
-            const priceColumn = userRole === 'admin' ? `<td>$${item.price.toFixed(2)}</td><td>$${total}</td>` : '';
-            const deleteButton = userRole === 'admin' ? `
-                <button class="btn btn-sm btn-danger delete-btn" data-id="${item.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            ` : '';
-            
-            const row = `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.name}</td>
-                    <td><span class="badge bg-secondary">${item.category}</span></td>
-                    <td>${item.quantity}</td>
-                    ${priceColumn}
-                    <td><span class="${statusClass}">${statusText}</span></td>
-                    <td class="table-actions">
-                        <button class="btn btn-sm btn-primary edit-btn" data-id="${item.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        ${deleteButton}
-                    </td>
-                </tr>
-            `;
-            tbody.append(row);
-        });
-
-        updateStats();
-    }
-
-    $('#saveItemBtn').on('click', function() {
-        // Check if user is admin
-        if (userRole !== 'admin') {
-            alert('Only administrators can add new items!');
+        if (!itemCategory.length || !itemCategory.val()) {
+            alert('⚠️ Please select a category');
             return;
         }
         
-        const name = $('#itemName').val().trim();
-        const category = $('#itemCategory').val();
-        const quantity = parseInt($('#itemQuantity').val());
-        const price = parseFloat($('#itemPrice').val());
-
-        if (!name || !category || isNaN(quantity) || isNaN(price)) {
-            alert('Please fill in all fields!');
-            return;
-        }
-
-        const newItem = {
-            id: getNextId(),
-            name: name,
-            category: category,
-            quantity: quantity,
-            price: price
+        const item = {
+            name: itemName.val(),
+            category_id: itemCategory.val(),
+            quantity: itemQuantity.val() || 0,
+            price: itemPrice.val() || 0,
+            description: 'Added via Dashboard',
+            supplier_id: 1 // Default supplier
         };
 
-        inventory.push(newItem);
-        saveInventory();
-        renderInventory();
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Saving...');
 
-        // Reset form and close modal
-        $('#addItemForm')[0].reset();
-        $('#addItemModal').modal('hide');
-
-        alert('Item added successfully!');
-    });
-    
-    if (userRole !== 'admin') {
-        const addBtn = $('#addItemBtn');
-        if (addBtn.length) {
-            addBtn.hide();
-            addBtn.after('<p class="text-muted mt-2"><i class="fas fa-info-circle me-2"></i>Only admins can add new items</p>');
-        }
-    }
-
-    $(document).on('click', '.edit-btn', function() {
-        const id = parseInt($(this).data('id'));
-        const item = inventory.find(i => i.id === id);
-
-        if (item) {
-            $('#editItemId').val(item.id);
-            $('#editItemName').val(item.name);
-            $('#editItemCategory').val(item.category);
-            $('#editItemQuantity').val(item.quantity);
-            $('#editItemPrice').val(item.price);
-
-            $('#editItemModal').modal('show');
-        }
-    });
-
-    $('#updateItemBtn').on('click', function() {
-        const id = parseInt($('#editItemId').val());
-        const name = $('#editItemName').val().trim();
-        const category = $('#editItemCategory').val();
-        const quantity = parseInt($('#editItemQuantity').val());
-        const price = parseFloat($('#editItemPrice').val());
-
-        if (!name || !category || isNaN(quantity) || isNaN(price)) {
-            alert('Please fill in all fields!');
-            return;
-        }
-
-        const itemIndex = inventory.findIndex(i => i.id === id);
-        if (itemIndex !== -1) {
-            inventory[itemIndex] = {
-                id: id,
-                name: name,
-                category: category,
-                quantity: quantity,
-                price: price
-            };
-
-            saveInventory();
-            renderInventory();
-
-            $('#editItemModal').modal('hide');
-            alert('Item updated successfully!');
-        }
-    });
-
-    $(document).on('click', '.delete-btn', function() {
-        const id = parseInt($(this).data('id'));
-        const item = inventory.find(i => i.id === id);
-
-        if (item && confirm(`Are you sure you want to delete "${item.name}"?`)) {
-            inventory = inventory.filter(i => i.id !== id);
-            saveInventory();
-            renderInventory();
-            alert('Item deleted successfully!');
-        }
-    });
-
-            renderInventory();
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('inventoryTableBody')) {
-                window.initDashboard();
+        $.ajax({
+            url: '../backend/products',
+            type: 'POST',
+            headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+            contentType: 'application/json',
+            data: JSON.stringify(item),
+            success: function (response) {
+                if (response.success) {
+                    // Hide modal using Bootstrap 5 method
+                    const modalElement = document.getElementById('addItemModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    $('#addItemForm')[0].reset();
+                    loadInventory();
+                    alert('✅ Item added successfully!');
+                }
+            },
+            error: function (xhr) {
+                alert('❌ Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown'));
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalText);
             }
         });
-    } else {
-        if (document.getElementById('inventoryTableBody')) {
-            window.initDashboard();
-        }
-    }
+    });
 
-})(jQuery);
+    // Update Item
+    $('#updateItemBtn').off('click').on('click', function () {
+        const id = $('#editItemId').val();
+        const item = {
+            name: $('#editItemName').val(),
+            category_id: $('#editItemCategory').val(),
+            quantity: $('#editItemQuantity').val(),
+            price: $('#editItemPrice').val(),
+            description: 'Updated via Dashboard',
+            supplier_id: 1
+        };
+
+        $.ajax({
+            url: '../backend/products/' + id,
+            type: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+            contentType: 'application/json',
+            data: JSON.stringify(item),
+            success: function (response) {
+                if (response.success) {
+                    // Hide modal using Bootstrap 5 method
+                    const modalElement = document.getElementById('editItemModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    loadInventory();
+                }
+            },
+            error: function (xhr) {
+                alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown'));
+            }
+        });
+    });
+};
+
+function loadInventory() {
+    $.ajax({
+        url: '../backend/products',
+        type: 'GET',
+        headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+        success: function (response) {
+            if (response.success) {
+                let products = response.data;
+                
+                // Add sample data if no products exist
+                if (!products || products.length === 0) {
+                    products = [
+                        {id: 1, name: 'Laptop HP Pavilion', category_id: 'Electronics', quantity: 15, price: 899.99},
+                        {id: 2, name: 'Office Chair', category_id: 'Furniture', quantity: 8, price: 249.50},
+                        {id: 3, name: 'USB-C Cable', category_id: 'Electronics', quantity: 50, price: 12.99},
+                        {id: 4, name: 'Desk Lamp', category_id: 'Furniture', quantity: 5, price: 34.99},
+                        {id: 5, name: 'Wireless Mouse', category_id: 'Electronics', quantity: 22, price: 29.99},
+                        {id: 6, name: 'Notebook A4', category_id: 'Stationery', quantity: 100, price: 3.50},
+                        {id: 7, name: 'Ergonomic Keyboard', category_id: 'Electronics', quantity: 12, price: 79.99},
+                        {id: 8, name: 'Monitor Stand', category_id: 'Furniture', quantity: 6, price: 45.00}
+                    ];
+                }
+                
+                const tbody = $('#inventoryTableBody');
+                tbody.empty();
+
+                let totalItems = 0;
+                let inStock = 0;
+                let lowStock = 0;
+                let totalValue = 0;
+
+                products.forEach(product => {
+                    totalItems++;
+                    if (product.quantity > 10) inStock++;
+                    else lowStock++;
+                    totalValue += product.price * product.quantity;
+
+                    const statusClass = product.quantity > 10 ? 'in-stock' : 'low-stock';
+                    const statusText = product.quantity > 10 ? 'In Stock' : 'Low Stock';
+
+                    let actions = '';
+                    if (Auth.isAdmin()) {
+                        actions = `
+                            <button class="btn btn-sm btn-primary edit-btn" data-id="${product.id}" data-product='${JSON.stringify(product).replace(/'/g, "&#39;")}'>
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${product.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                    }
+
+                    tbody.append(`
+                        <tr>
+                            <td>${product.id}</td>
+                            <td>${product.name}</td>
+                            <td>${product.category_id}</td>
+                            <td>${product.quantity}</td>
+                            <td>$${product.price}</td>
+                            <td>$${(product.price * product.quantity).toFixed(2)}</td>
+                            <td><span class="${statusClass}">${statusText}</span></td>
+                            <td class="table-actions">${actions}</td>
+                        </tr>
+                    `);
+                });
+
+                $('#totalItems').text(totalItems);
+                $('#inStockItems').text(inStock);
+                $('#lowStockItems').text(lowStock);
+                $('#totalValue').text('$' + totalValue.toFixed(2));
+
+                // Attach handlers
+                $('.edit-btn').off('click').on('click', function () {
+                    const product = $(this).data('product');
+                    $('#editItemId').val(product.id);
+                    $('#editItemName').val(product.name);
+                    $('#editItemCategory').val(product.category_id);
+                    $('#editItemQuantity').val(product.quantity);
+                    $('#editItemPrice').val(product.price);
+                    
+                    // Open modal using Bootstrap 5 method
+                    const modalElement = document.getElementById('editItemModal');
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                });
+
+                $('.delete-btn').click(function () {
+                    if (confirm('Are you sure you want to delete this item?')) {
+                        const id = $(this).data('id');
+                        $.ajax({
+                            url: '../backend/products/' + id,
+                            type: 'DELETE',
+                            headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+                            success: function (response) {
+                                if (response.success) loadInventory();
+                            },
+                            error: function (xhr) {
+                                alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown'));
+                            }
+                        });
+                    }
+                });
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                Auth.logout();
+            }
+        }
+    });
+}
+
+function loadCategories() {
+    $.ajax({
+        url: '../backend/categories',
+        type: 'GET',
+        headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+        success: function (response) {
+            if (response.success) {
+                const categories = response.data;
+                const options = '<option value="">Select category</option>' +
+                    categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                $('#itemCategory').html(options);
+                $('#editItemCategory').html(options);
+            }
+        }
+    });
+}
