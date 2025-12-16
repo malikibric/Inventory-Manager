@@ -17,11 +17,15 @@
             if (loginBtn) loginBtn.style.display = 'none';
             if (logoutBtn) {
                 logoutBtn.style.display = 'block';
-                logoutBtn.classList.add('d-lg-block');
+                if (logoutBtn.classList) {
+                    logoutBtn.classList.add('d-lg-block');
+                }
             }
             if (userInfo) {
                 userInfo.style.display = 'flex';
-                userInfo.classList.add('d-lg-flex');
+                if (userInfo.classList) {
+                    userInfo.classList.add('d-lg-flex');
+                }
             }
             if (navUsername) navUsername.textContent = user.username;
             

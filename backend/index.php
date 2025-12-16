@@ -23,7 +23,7 @@ spl_autoload_register(function ($class) {
         __DIR__ . '/dao/',
         __DIR__ . '/services/',
     ];
-    
+
     foreach ($paths as $path) {
         $file = $path . $class . '.php';
         if (file_exists($file)) {
@@ -39,9 +39,40 @@ require_once __DIR__ . '/rest/routes/orders.php';
 require_once __DIR__ . '/rest/routes/order_items.php';
 require_once __DIR__ . '/rest/routes/suppliers.php';
 require_once __DIR__ . '/rest/routes/users.php';
+require_once __DIR__ . '/rest/routes/auth.php';
+require_once __DIR__ . '/rest/middleware/AuthMiddleware.php';
+
+Flight::before('start', function (&$params, &$output) {
+    $request = Flight::request();
+    $url = $request->url;
+    $method = $request->method;
+
+    // Basic Logging
+    error_log("Request: $method $url");
+
+    // Public routes
+    if ($url === '/login' || ($url === '/users' && $method === 'POST') || $url === '/' || strpos($url, '/docs') === 0) {
+        return;
+    }
+
+    // Handle OPTIONS request for CORS
+    if ($method === 'OPTIONS') {
+        return;
+    }
+
+    $authMiddleware = new AuthMiddleware();
+
+    // Validate token for all other routes
+    $authMiddleware->validateToken();
+
+    // Admin check for modification methods
+    if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
+        $authMiddleware->adminOnly();
+    }
+});
 
 
-Flight::route('GET /', function() {
+Flight::route('GET /', function () {
     Flight::json([
         'success' => true,
         'message' => 'Inventory Manager API',
@@ -81,14 +112,14 @@ Flight::route('GET /', function() {
     ], 200);
 });
 
-Flight::map('error', function(Exception $ex) {
+Flight::map('error', function (Exception $ex) {
     Flight::json([
         'success' => false,
         'error' => $ex->getMessage()
     ], 500);
 });
 
-Flight::map('notFound', function() {
+Flight::map('notFound', function () {
     Flight::json([
         'success' => false,
         'error' => 'Endpoint not found'
@@ -97,4 +128,3 @@ Flight::map('notFound', function() {
 
 Flight::start();
 ?>
-
