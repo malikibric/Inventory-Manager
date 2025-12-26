@@ -1,0 +1,16 @@
+<?php
+require_once 'BaseDao.php';
+
+class OrderDao extends BaseDao {
+    public function __construct() {
+        parent::__construct("orders", "order_id");
+    }
+
+    public function getByUser($user_id) {
+        $stmt = $this->connection->prepare("SELECT * FROM orders WHERE user_id = :user_id");
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+?>
