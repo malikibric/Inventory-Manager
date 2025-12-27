@@ -11,7 +11,7 @@ const CONFIG = {
     // API Base URLs
     api: {
         development: 'http://localhost:8080',
-        production: 'https://inventory-manager-1-y9ct.onrender.com'
+        production: 'https://inventory-manager-2.onrender.com/backend'
     },
     
     // Get current API base URL
