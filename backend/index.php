@@ -51,7 +51,7 @@ Flight::before('start', function (&$params, &$output) {
     error_log("Request: $method $url");
 
     // Public routes
-    if ($url === '/login' || ($url === '/users' && $method === 'POST') || $url === '/' || strpos($url, '/docs') === 0) {
+    if ($url === '/login' || ($url === '/users' && $method === 'POST') || $url === '/' || $url === '/migrate' || strpos($url, '/docs') === 0) {
         return;
     }
 
@@ -110,6 +110,159 @@ Flight::route('GET /', function () {
             'DELETE /users/{id}' => 'Delete user',
         ]
     ], 200);
+});
+
+// Migration route
+Flight::route('GET /migrate', function () {
+    $secret = Flight::request()->query['secret'] ?? '';
+    $expectedSecret = getenv('MIGRATION_SECRET') ?: 'migrate123';
+
+    if ($secret !== $expectedSecret) {
+        Flight::json([
+            'success' => false,
+            'error' => 'Unauthorized. Provide correct secret parameter.'
+        ], 401);
+        return;
+    }
+
+    try {
+        $conn = Database::connect();
+        
+        // Start transaction
+        $conn->beginTransaction();
+        
+        $log = [];
+        $log[] = "Starting migration...";
+        
+        // Drop existing tables
+        $log[] = "Dropping existing tables...";
+        $conn->exec("DROP TABLE IF EXISTS order_items CASCADE");
+        $conn->exec("DROP TABLE IF EXISTS orders CASCADE");
+        $conn->exec("DROP TABLE IF EXISTS products CASCADE");
+        $conn->exec("DROP TABLE IF EXISTS categories CASCADE");
+        $conn->exec("DROP TABLE IF EXISTS suppliers CASCADE");
+        $conn->exec("DROP TABLE IF EXISTS users CASCADE");
+        $log[] = "✓ Tables dropped";
+        
+        // Create users table
+        $log[] = "Creating users table...";
+        $conn->exec("
+            CREATE TABLE users (
+                user_id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Users table created";
+        
+        // Create categories table
+        $log[] = "Creating categories table...";
+        $conn->exec("
+            CREATE TABLE categories (
+                category_id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Categories table created";
+        
+        // Create suppliers table
+        $log[] = "Creating suppliers table...";
+        $conn->exec("
+            CREATE TABLE suppliers (
+                supplier_id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                contact_person VARCHAR(100),
+                email VARCHAR(100),
+                phone VARCHAR(20),
+                address TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Suppliers table created";
+        
+        // Create products table
+        $log[] = "Creating products table...";
+        $conn->exec("
+            CREATE TABLE products (
+                product_id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                description TEXT,
+                price DECIMAL(10, 2) NOT NULL,
+                quantity INTEGER NOT NULL DEFAULT 0,
+                category_id INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
+                supplier_id INTEGER REFERENCES suppliers(supplier_id) ON DELETE SET NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Products table created";
+        
+        // Create orders table
+        $log[] = "Creating orders table...";
+        $conn->exec("
+            CREATE TABLE orders (
+                order_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+                total_amount DECIMAL(10, 2) NOT NULL,
+                status VARCHAR(50) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Orders table created";
+        
+        // Create order_items table
+        $log[] = "Creating order_items table...";
+        $conn->exec("
+            CREATE TABLE order_items (
+                order_item_id SERIAL PRIMARY KEY,
+                order_id INTEGER REFERENCES orders(order_id) ON DELETE CASCADE,
+                product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
+                quantity INTEGER NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        $log[] = "✓ Order_items table created";
+        
+        // Create indexes
+        $log[] = "Creating indexes...";
+        $conn->exec("CREATE INDEX idx_products_category ON products(category_id)");
+        $conn->exec("CREATE INDEX idx_products_supplier ON products(supplier_id)");
+        $conn->exec("CREATE INDEX idx_orders_user ON orders(user_id)");
+        $conn->exec("CREATE INDEX idx_order_items_order ON order_items(order_id)");
+        $conn->exec("CREATE INDEX idx_order_items_product ON order_items(product_id)");
+        $log[] = "✓ Indexes created";
+        
+        // Commit transaction
+        $conn->commit();
+        
+        $log[] = "✅ Migration completed successfully!";
+        $log[] = "You can now register users and use the application.";
+        
+        Flight::json([
+            'success' => true,
+            'message' => 'Database migration completed successfully',
+            'log' => $log
+        ], 200);
+        
+    } catch (Exception $e) {
+        if (isset($conn)) {
+            $conn->rollBack();
+        }
+        Flight::json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
 });
 
 Flight::map('error', function (Exception $ex) {
