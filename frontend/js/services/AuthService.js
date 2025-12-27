@@ -4,9 +4,11 @@
  */
 const AuthService = {
     /**
-     * API base URL
+     * API base URL - uses CONFIG.API_BASE_URL from config.js
      */
-    baseURL: '../backend',
+    get baseURL() {
+        return window.CONFIG ? window.CONFIG.API_BASE_URL : '../backend';
+    },
 
     /**
      * Login user

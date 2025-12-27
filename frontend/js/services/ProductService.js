@@ -3,7 +3,9 @@
  * Handles all product-related operations with validation
  */
 const ProductService = {
-    baseURL: '../backend/products',
+    get baseURL() {
+        return window.CONFIG ? `${window.CONFIG.API_BASE_URL}/products` : '../backend/products';
+    },
 
     /**
      * Get all products

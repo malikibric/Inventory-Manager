@@ -3,7 +3,9 @@
  * Handles all category-related operations with validation
  */
 const CategoryService = {
-    baseURL: '../backend/categories',
+    get baseURL() {
+        return window.CONFIG ? `${window.CONFIG.API_BASE_URL}/categories` : '../backend/categories';
+    },
 
     /**
      * Get all categories

@@ -3,7 +3,9 @@
  * Handles all order-related operations with validation
  */
 const OrderService = {
-    baseURL: '../backend/orders',
+    get baseURL() {
+        return window.CONFIG ? `${window.CONFIG.API_BASE_URL}/orders` : '../backend/orders';
+    },
 
     /**
      * Get all orders
