@@ -15,10 +15,10 @@ DROP TABLE IF EXISTS users CASCADE;
 -- Table: users
 -- =====================================================
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(100) NOT NULL,
+    user_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -28,7 +28,7 @@ CREATE TABLE users (
 -- Table: categories
 -- =====================================================
 CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
+    category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -39,7 +39,7 @@ CREATE TABLE categories (
 -- Table: suppliers
 -- =====================================================
 CREATE TABLE suppliers (
-    id SERIAL PRIMARY KEY,
+    supplier_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     contact_person VARCHAR(100),
     email VARCHAR(100),
@@ -53,13 +53,13 @@ CREATE TABLE suppliers (
 -- Table: products
 -- =====================================================
 CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
+    product_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     quantity INTEGER NOT NULL DEFAULT 0,
-    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-    supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL,
+    category_id INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
+    supplier_id INTEGER REFERENCES suppliers(supplier_id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -68,8 +68,8 @@ CREATE TABLE products (
 -- Table: orders
 -- =====================================================
 CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    order_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
     total_amount DECIMAL(10, 2) NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -80,9 +80,9 @@ CREATE TABLE orders (
 -- Table: order_items
 -- =====================================================
 CREATE TABLE order_items (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
-    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    order_item_id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(order_id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
