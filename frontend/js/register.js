@@ -46,6 +46,15 @@ window.initRegisterPage = function () {
     // Add password strength indicator
     $('#password').on('input', function() {
         const password = $(this).val();
+        const $strengthContainer = $('#passwordStrength');
+        const $strengthText = $('.password-strength-text');
+        
+        // Hide if password is empty
+        if (password.length === 0) {
+            $strengthContainer.hide();
+            return;
+        }
+        
         let strength = 0;
         let strengthText = '';
         let strengthClass = '';
@@ -56,6 +65,9 @@ window.initRegisterPage = function () {
         if (password.match(/[0-9]/)) strength++;
         if (password.match(/[@$!%*?&#]/)) strength++;
 
+        // Remove all previous classes
+        $strengthText.removeClass('text-danger text-warning text-success');
+        
         switch(strength) {
             case 0:
             case 1:
@@ -74,10 +86,9 @@ window.initRegisterPage = function () {
                 break;
         }
 
-        $('#password').next('.password-strength').remove();
-        if (password.length > 0) {
-            $('#password').after(`<small class="password-strength ${strengthClass} d-block mt-1">Password Strength: ${strengthText}</small>`);
-        }
+        // Update text and class, then show
+        $strengthText.addClass(strengthClass).text(`Password Strength: ${strengthText}`);
+        $strengthContainer.show();
     });
 
     // Handle form submission
