@@ -46,12 +46,17 @@ window.initRegisterPage = function () {
     // Add password strength indicator
     $('#password').on('input', function() {
         const password = $(this).val();
+        
+        // Remove any old password strength messages that might exist
+        $('.password-strength').remove();
+        
         const $strengthContainer = $('#passwordStrength');
-        const $strengthText = $('.password-strength-text');
+        const $strengthText = $strengthContainer.find('.password-strength-text');
         
         // Hide if password is empty
         if (password.length === 0) {
             $strengthContainer.hide();
+            $strengthText.text('').removeClass('text-danger text-warning text-success');
             return;
         }
         
@@ -102,8 +107,8 @@ window.initRegisterPage = function () {
         const firstName = $('#firstName').val().trim();
         const lastName = $('#lastName').val().trim();
         const email = $('#email').val().trim();
-        const password = $('#password').val();
-        const confirmPassword = $('#confirmPassword').val();
+        const password = $('#password').val(); // Don't trim passwords!
+        const confirmPassword = $('#confirmPassword').val(); // Don't trim passwords!
 
         // Prepare form data
         const formData = {
@@ -117,9 +122,10 @@ window.initRegisterPage = function () {
         // Client-side validation
         const validation = ValidationService.validateForm(formData, validationRules);
 
-        // Additional password match validation
+        // Additional password match validation (check exact match)
         if (password !== confirmPassword) {
             validation.isValid = false;
+            if (!validation.errors) validation.errors = {};
             validation.errors.confirmPassword = 'Passwords do not match';
         }
 
@@ -183,6 +189,28 @@ window.initRegisterPage = function () {
         } finally {
             // Re-enable button
             btn.prop('disabled', false).html(originalText);
+        }
+    });
+
+    // Real-time password match validation
+    $('#confirmPassword').on('input', function() {
+        const password = $('#password').val();
+        const confirmPassword = $(this).val();
+        const $feedback = $('#confirmPassword').siblings('.invalid-feedback');
+        
+        if (confirmPassword.length > 0) {
+            if (password !== confirmPassword) {
+                $('#confirmPassword').addClass('is-invalid').removeClass('is-valid');
+                if ($feedback.length === 0) {
+                    $('#confirmPassword').after('<div class="invalid-feedback">Passwords do not match</div>');
+                }
+            } else {
+                $('#confirmPassword').removeClass('is-invalid').addClass('is-valid');
+                $feedback.remove();
+            }
+        } else {
+            $('#confirmPassword').removeClass('is-invalid is-valid');
+            $feedback.remove();
         }
     });
 
