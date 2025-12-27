@@ -8,16 +8,14 @@ I used render for deployment because it's simple and free. Here is my dashboard 
 
 ## 🧾 Project Description
 
-Inventory-Manager is a lightweight application designed for small and medium-sized businesses that need clear and efficient control over their inventory and product stock levels. It provides product management, stock tracking, warehouse overview, and basic reporting features.
+Inventory-Manager is a lightweight application for IT 2001 Web Programming course at IBU.
 
 ---
 
 ## 🔧 Technologies
 
-- **Backend:** PHP (or specific version/framework — check the project files)
+- **Backend:** PHP 
 - **Frontend:** HTML, CSS (SCSS), JavaScript
 - **Structure:** Separated `backend/` and `frontend/` directories
-- **Database:** Likely MySQL/MariaDB (see included schema: *"My database schema plan only.png"*)
-- **Dependencies:** Check `composer.json` or `package.json` if present
-
+- **Database:** mysql and postgresql
 ---
