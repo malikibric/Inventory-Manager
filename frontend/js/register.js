@@ -102,7 +102,9 @@ window.initRegisterPage = function () {
         const formData = {
             firstName,
             lastName,
-            email
+            email,
+            password,
+            confirmPassword
         };
 
         // Client-side validation for non-password fields
