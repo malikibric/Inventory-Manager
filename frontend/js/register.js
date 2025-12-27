@@ -112,7 +112,7 @@ window.initRegisterPage = function () {
         if (!validation.errors) validation.errors = {};
 
         // Manual password validation (not real-time, only on submit)
-        if (!password || password.trim() === '') {
+        if (!password || password === '') {
             validation.isValid = false;
             validation.errors.password = 'Password is required';
         } else {
@@ -124,7 +124,7 @@ window.initRegisterPage = function () {
         }
 
         // Confirm password validation
-        if (!confirmPassword || confirmPassword.trim() === '') {
+        if (!confirmPassword || confirmPassword === '') {
             validation.isValid = false;
             validation.errors.confirmPassword = 'Confirm Password is required';
         } else if (password !== confirmPassword) {

@@ -38,9 +38,20 @@ const ValidationService = {
 
         password: (value) => {
             // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-            if (!passwordRegex.test(value)) {
-                return 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character';
+            if (value.length < 8) {
+                return 'Password must be at least 8 characters';
+            }
+            if (!/[a-z]/.test(value)) {
+                return 'Password must contain at least one lowercase letter';
+            }
+            if (!/[A-Z]/.test(value)) {
+                return 'Password must contain at least one uppercase letter';
+            }
+            if (!/\d/.test(value)) {
+                return 'Password must contain at least one number';
+            }
+            if (!/[^A-Za-z0-9]/.test(value)) {
+                return 'Password must contain at least one special character';
             }
             return null;
         },
