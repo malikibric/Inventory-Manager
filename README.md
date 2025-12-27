@@ -1,8 +1,6 @@
 # Inventory-Manager
 
-A web application for efficient product and inventory management.
-
----
+https://inventory-manager-2.onrender.com
 
 ## 🧾 Project Description
 
