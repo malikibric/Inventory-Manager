@@ -112,11 +112,9 @@ Flight::route('GET /', function () {
     ], 200);
 });
 
-// Migration route
+// Migration route - redirect to the actual migrate.php file
 Flight::route('GET /migrate', function () {
-    // Include the migration script which handles both UI and logic
-    // and supports both MySQL and PostgreSQL
-    require __DIR__ . '/migrate.php';
+    Flight::redirect('/migrate.php', 302);
 });
 
 Flight::map('error', function (Exception $ex) {
