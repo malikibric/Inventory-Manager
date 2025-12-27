@@ -1,5 +1,5 @@
 window.initRegisterPage = function () {
-    // Setup real-time validation
+    // Setup real-time validation (EXCLUDE password fields - they have custom validation)
     const validationRules = {
         firstName: {
             label: 'First Name',
@@ -25,20 +25,8 @@ window.initRegisterPage = function () {
                 ValidationService.rules.required,
                 ValidationService.rules.email
             ]
-        },
-        password: {
-            label: 'Password',
-            rules: [
-                ValidationService.rules.required,
-                ValidationService.rules.password
-            ]
-        },
-        confirmPassword: {
-            label: 'Confirm Password',
-            rules: [
-                ValidationService.rules.required
-            ]
         }
+        // PASSWORD FIELDS EXCLUDED - they have custom strength indicator and match validation
     };
 
     ValidationService.setupRealTimeValidation('registerForm', validationRules);
@@ -110,22 +98,35 @@ window.initRegisterPage = function () {
         const password = $('#password').val(); // Don't trim passwords!
         const confirmPassword = $('#confirmPassword').val(); // Don't trim passwords!
 
-        // Prepare form data
+        // Prepare form data (only validate non-password fields with ValidationService)
         const formData = {
             firstName,
             lastName,
-            email,
-            password,
-            confirmPassword
+            email
         };
 
-        // Client-side validation
+        // Client-side validation for non-password fields
         const validation = ValidationService.validateForm(formData, validationRules);
+        if (!validation.errors) validation.errors = {};
 
-        // Additional password match validation (check exact match)
-        if (password !== confirmPassword) {
+        // Manual password validation (not real-time, only on submit)
+        if (!password || password.trim() === '') {
             validation.isValid = false;
-            if (!validation.errors) validation.errors = {};
+            validation.errors.password = 'Password is required';
+        } else {
+            const passwordError = ValidationService.rules.password(password);
+            if (passwordError) {
+                validation.isValid = false;
+                validation.errors.password = passwordError;
+            }
+        }
+
+        // Confirm password validation
+        if (!confirmPassword || confirmPassword.trim() === '') {
+            validation.isValid = false;
+            validation.errors.confirmPassword = 'Confirm Password is required';
+        } else if (password !== confirmPassword) {
+            validation.isValid = false;
             validation.errors.confirmPassword = 'Passwords do not match';
         }
 
@@ -212,6 +213,13 @@ window.initRegisterPage = function () {
             $('#confirmPassword').removeClass('is-invalid is-valid');
             $feedback.remove();
         }
+    });
+
+    // Clear password field validation errors when typing (remove red border and error text)
+    $('#password').on('input', function() {
+        $(this).removeClass('is-invalid is-valid');
+        $(this).siblings('.invalid-feedback').remove();
+        $('.alert').fadeOut(300, function() { $(this).remove(); });
     });
 
     // Clear alerts when user starts typing
