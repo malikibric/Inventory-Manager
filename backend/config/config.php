@@ -17,7 +17,6 @@ class Database {
                     $dbInfo = parse_url($databaseUrl);
                     
                     $host = $dbInfo['host'] ?? 'localhost';
-                    $port = $dbInfo['port'] ?? 3306;
                     $dbName = ltrim($dbInfo['path'] ?? '', '/');
                     $username = $dbInfo['user'] ?? 'root';
                     $password = $dbInfo['pass'] ?? '';
@@ -27,9 +26,11 @@ class Database {
                     
                     if ($scheme === 'postgres' || $scheme === 'postgresql') {
                         // PostgreSQL connection
+                        $port = $dbInfo['port'] ?? 5432;
                         $dsn = "pgsql:host=$host;port=$port;dbname=$dbName";
                     } else {
                         // MySQL connection
+                        $port = $dbInfo['port'] ?? 3306;
                         $dsn = "mysql:host=$host;port=$port;dbname=$dbName";
                     }
                 } else {
