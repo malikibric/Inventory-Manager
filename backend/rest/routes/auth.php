@@ -33,11 +33,16 @@ Flight::route('POST /login', function () {
         return;
     }
 
+    $now = time();
+    $expiration = $now + JwtConfig::JWT_EXPIRATION;
+    error_log("Creating token - Current time: " . $now . " (" . date('Y-m-d H:i:s', $now) . ")");
+    error_log("Token will expire at: " . $expiration . " (" . date('Y-m-d H:i:s', $expiration) . ")");
+
     $payload = [
         'iss' => 'http://localhost',
         'aud' => 'http://localhost',
-        'iat' => time(),
-        'exp' => time() + JwtConfig::JWT_EXPIRATION,
+        'iat' => $now,
+        'exp' => $expiration,
         'data' => [
             'id' => $user['user_id'],
             'username' => $user['name'],
