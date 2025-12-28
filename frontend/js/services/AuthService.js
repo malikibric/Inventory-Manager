@@ -180,6 +180,8 @@ const AuthService = {
      */
     validateSession: () => {
         const token = Auth.getToken();
+        console.log('Validating session, token:', token ? 'exists' : 'missing');
+        
         if (!token) return false;
 
         // Check token expiration (if JWT)
@@ -187,14 +189,21 @@ const AuthService = {
             const payload = JSON.parse(atob(token.split('.')[1]));
             const now = Math.floor(Date.now() / 1000);
             
+            console.log('Token expiration:', new Date(payload.exp * 1000));
+            console.log('Current time:', new Date(now * 1000));
+            console.log('Token expired?', payload.exp < now);
+            
             if (payload.exp && payload.exp < now) {
                 // Token expired
+                console.log('Token expired, logging out');
                 AuthService.logout();
                 return false;
             }
             
+            console.log('Session valid');
             return true;
         } catch (e) {
+            console.error('Token parsing error:', e);
             // If token parsing fails, keep the session
             return true;
         }
