@@ -51,6 +51,7 @@ const AuthService = {
                 url: `${AuthService.baseURL}/login`,
                 type: 'POST',
                 contentType: 'application/json',
+                dataType: 'json',
                 data: JSON.stringify({
                     email: SecurityService.sanitizeInput(credentials.email),
                     password: credentials.password // Don't sanitize password
@@ -58,6 +59,9 @@ const AuthService = {
             });
 
             console.log('Login response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Has success?', response.hasOwnProperty('success'), response.success);
+            console.log('Has token?', response.hasOwnProperty('token'), response.token);
 
             if (response.success && response.token) {
                 // Store token and user info
