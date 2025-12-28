@@ -57,14 +57,18 @@ const AuthService = {
                 })
             });
 
+            console.log('Login response:', response);
+
             if (response.success && response.token) {
                 // Store token and user info
                 Auth.setToken(response.token);
                 Auth.setUser(response.user);
                 Auth.updateUI();
+                console.log('Token stored:', localStorage.getItem('token'));
                 return { success: true, user: response.user };
             }
 
+            console.log('Login failed - no token in response');
             return { success: false, error: 'Invalid credentials' };
         } catch (error) {
             console.error('Login error:', error);
