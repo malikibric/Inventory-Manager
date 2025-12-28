@@ -52,6 +52,7 @@ const AuthService = {
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'json',
+                cache: false,
                 data: JSON.stringify({
                     email: SecurityService.sanitizeInput(credentials.email),
                     password: credentials.password // Don't sanitize password
