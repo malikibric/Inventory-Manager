@@ -51,7 +51,7 @@ Flight::before('start', function (&$params, &$output) {
     error_log("Request: $method $url");
 
     // Public routes
-    if ($url === '/login' || ($url === '/users' && $method === 'POST') || $url === '/' || strpos($url, '/docs') === 0) {
+    if ($url === '/login' || ($url === '/users' && $method === 'POST') || $url === '/' || $url === '/migrate' || strpos($url, '/docs') === 0) {
         return;
     }
 
@@ -112,6 +112,11 @@ Flight::route('GET /', function () {
     ], 200);
 });
 
+// Migration route - redirect to the actual migrate.php file
+Flight::route('GET /migrate', function () {
+    Flight::redirect('/migrate.php', 302);
+});
+
 Flight::map('error', function (Exception $ex) {
     Flight::json([
         'success' => false,
@@ -126,5 +131,10 @@ Flight::map('notFound', function () {
     ], 404);
 });
 
+// Get port from environment variable or default to 8080 for Render
+$port = getenv('PORT') ?: 8080;
+
+// For production deployment (Render uses Apache/Nginx, so Flight::start() is sufficient)
+// The web server handles the port configuration
 Flight::start();
 ?>

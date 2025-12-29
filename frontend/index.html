@@ -11,18 +11,6 @@
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 
-    <!-- G    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/lib/wow/wow.min.js"></script>
-    <script src="assets/lib/easing/easing.min.js"></script>
-    <script src="assets/lib/waypoints/waypoints.min.js"></script>
-    <script src="assets/lib/counterup/counterup.min.js"></script>
-    <script src="assets/lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
-    
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -348,27 +336,34 @@
 
 
     <!-- JavaScript Libraries -->
-    <script src="js/jquery.min.js"></script>
+    <!-- jQuery MUST load first -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    
+    <!-- jQuery plugins (require jQuery to be loaded first) -->
+    <script src="assets/lib/waypoints/waypoints.min.js"></script>
+    <script src="assets/lib/counterup/counterup.min.js"></script>
+    <script src="assets/lib/wow/wow.min.js"></script>
+    <script src="assets/lib/easing/easing.min.js"></script>
+    <script src="assets/lib/owlcarousel/owl.carousel.min.js"></script>
 
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+    <!-- Configuration (must load before services) -->
+    <script src="js/config.js"></script>
+    
+    <!-- Service Layer (must load before pages that use them) -->
+    <script src="js/services/ValidationService.js"></script>
+    <script src="js/services/SecurityService.js"></script>
+    <script src="js/services/AuthService.js"></script>
+    <script src="js/services/ProductService.js"></script>
+    <script src="js/services/CategoryService.js"></script>
+    <script src="js/services/OrderService.js"></script>
 
-    <!-- Auth Script -->
+    <!-- Auth Core -->
     <script src="js/auth.js"></script>
 
-    <!-- Login Script -->
+    <!-- Page Scripts -->
     <script src="js/login.js"></script>
-
-    <!-- Register Script -->
     <script src="js/register.js"></script>
-
-    <!-- Dashboard Script -->
     <script src="js/dashboard.js"></script>
 
     <!-- SPA Library -->
@@ -376,6 +371,9 @@
 
     <!-- SPA Routes -->
     <script src="js/script.js"></script>
+    
+    <!-- Template Javascript (must load LAST to use counterUp) -->
+    <script src="js/main.js"></script>
 </body>
 
 </html>

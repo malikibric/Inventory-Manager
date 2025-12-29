@@ -1,0 +1,12 @@
+# 🔐 RENDER ENVIRONMENT VARIABLES
+# Kopiraj i zalijepi ovo u Render Dashboard → Environment
+
+APP_ENV=production
+DATABASE_URL=postgresql://shop_db_e1sd_user:Om9bFGWIsVgVhVuMynyhK8I3EbCFcNgb@dpg-d56qlo4hg0os73asb46g-a.frankfurt-postgres.render.com/shop_db_e1sd
+JWT_SECRET=E+VkeK5ySAP2dn2wEzcWcT/I1hLKafjWhndPdOaYZfpvpNTUqNqXHe7d8AH+xNMujcOvfKfVeNOv88DnNsCQHQ==
+PORT=8080
+DISPLAY_ERRORS=false
+ERROR_REPORTING=0
+
+# CORS (opciono, ako frontend bude na drugom domenu)
+CORS_ORIGIN=*

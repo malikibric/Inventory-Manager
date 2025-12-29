@@ -4,15 +4,16 @@
 
     // Check if user is logged in
     function checkAuthStatus() {
-        const currentUser = localStorage.getItem('currentUser');
+        // Check both 'user' and 'currentUser' for backwards compatibility
+        const userData = localStorage.getItem('user') || localStorage.getItem('currentUser');
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const userInfo = document.getElementById('userInfo');
         const navUsername = document.getElementById('navUsername');
         const dashboardLink = document.getElementById('dashboardLink');
         
-        if (currentUser) {
-            const user = JSON.parse(currentUser);
+        if (userData) {
+            const user = JSON.parse(userData);
             // Hide login button, show logout and user info
             if (loginBtn) loginBtn.style.display = 'none';
             if (logoutBtn) {
@@ -52,7 +53,9 @@
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            localStorage.removeItem('user');
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('token');
             
             // Check if we're in views folder or root
             const currentPath = window.location.pathname;

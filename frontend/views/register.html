@@ -132,6 +132,10 @@
                                         <input type="password" class="form-control" id="password" placeholder="Password" required>
                                         <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
                                     </div>
+                                    <!-- Password Strength Indicator -->
+                                    <div id="passwordStrength" class="mt-2" style="display: none;">
+                                        <small class="password-strength-text"></small>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-floating">
@@ -199,6 +203,17 @@
 
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
+    
+    <!-- Auth Core -->
+    <script src="../js/auth.js"></script>
+    
+    <!-- Configuration -->
+    <script src="../js/config.js"></script>
+    
+    <!-- Service Layer -->
+    <script src="../js/services/ValidationService.js"></script>
+    <script src="../js/services/SecurityService.js"></script>
+    <script src="../js/services/AuthService.js"></script>
     
     <!-- Auth Check Script -->
     <script src="../js/auth-check.js"></script>
